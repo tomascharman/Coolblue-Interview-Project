@@ -49,20 +49,20 @@ namespace Insurance.Api.Controllers
         public class InsuranceDto
         {
             public int ProductId { get; set; }
-            public float InsuranceValue { get; set; }
+            public decimal InsuranceValue { get; set; }
             [JsonIgnore]
             public string ProductTypeName { get; set; }
             [JsonIgnore]
             public bool ProductTypeHasInsurance { get; set; }
             [JsonIgnore]
-            public float SalesPrice { get; set; }
+            public decimal SalesPrice { get; set; }
         }
 
         public class OrderDto
         {
             public int OrderId { get; set; }
             public int[] ProductIds { get; set; }
-            public float TotalInsuranceCost { get; set; }
+            public decimal TotalInsuranceCost { get; set; }
         }
 
         private const string ProductApi = "http://localhost:5002";

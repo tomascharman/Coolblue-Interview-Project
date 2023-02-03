@@ -24,7 +24,7 @@ namespace Insurance.Tests
         [Fact]
         public void CalculateInsurance_GivenSalesPriceBetween500And2000Euros_ShouldAddThousandEurosToInsuranceCost()
         {
-            const float expectedInsuranceValue = 1000;
+            const decimal expectedInsuranceValue = 1000;
 
             var dto = new HomeController.InsuranceDto
             {
@@ -43,7 +43,7 @@ namespace Insurance.Tests
         [Fact]
         public void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeIsLaptops_ShouldAdd500EurosToInsuranceCost()
         {
-            const float expectedInsuranceValue = 500;
+            const decimal expectedInsuranceValue = 500;
 
             var dto = new HomeController.InsuranceDto
             {
@@ -62,7 +62,7 @@ namespace Insurance.Tests
         [Fact]
         public void CalculateOrderInsurance_GivenOrderThatContainsMultipleItems_ShouldBe1500EurosTotalInsuranceCost()
         {
-            const float expectedInsuranceValue = 1500;
+            const decimal expectedInsuranceValue = 1500;
 
             var order = new HomeController.OrderDto
             {
@@ -87,7 +87,7 @@ namespace Insurance.Tests
         [Fact]
         public void CalculateOrderInsurance_GivenOrderThatContainsDigitalCamera_ShouldBe500EurosTotalInsuranceCost()
         {
-            const float expectedInsuranceValue = 500;
+            const decimal expectedInsuranceValue = 500;
 
             var order = new HomeController.OrderDto
             {
@@ -111,7 +111,7 @@ namespace Insurance.Tests
         [Fact]
         public void CalculateOrderInsurance_GivenOrderThatContainsTwoDigitalCameras_ShouldBe500EurosTotalInsuranceCost()
         {
-            const float expectedInsuranceValue = 500;
+            const decimal expectedInsuranceValue = 500;
 
             var order = new HomeController.OrderDto
             {
