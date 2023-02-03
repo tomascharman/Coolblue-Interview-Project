@@ -58,4 +58,46 @@ private const int InsuranceValueForLaptopProducts = 500;
 private const string GetAllProductTypesUri = "/product_types";
 private const string GetSpecificProductUri = "/products/{0:G}";
 ```
-  
+
+
+## TASK 3 [FEATURE 1] ##
+
+#### PLAN ####
+
+Expand the `HomeController` class with a new class (`OrderDto`). This will contain an order id, an array of product ids and a total insurance cost. I will then create a new Http post that will calculate the insurance costs for each product included in this order.
+
+```
+public class OrderDto
+{
+  public int OrderId { get; set; }
+  public int[] ProductIds { get; set; }
+  public float TotalInsuranceCost { get; set; }
+}
+```
+```
+[HttpPost]
+[Route("api/insurance/order")]
+public OrderDto CalculateInsurance([FromBody] OrderDto orderToInsure)
+{
+  InsuranceDto[] insuranceDtos = new InsuranceDto[orderToInsure.ProductIds.Length];
+
+  for (int i = 0; i < orderToInsure.ProductIds.Length; i++)
+  {
+    InsuranceDto toInsure = new InsuranceDto();
+    toInsure.ProductId = orderToInsure.ProductIds[i];
+    insuranceDtos[i] = toInsure;
+  }
+
+  for (int i = 0; i < insuranceDtos.Length; i++)
+  {
+    BusinessRules.GetProductType(ProductApi, insuranceDtos[i].ProductId, ref insuranceDtos[i]);
+    BusinessRules.GetSalesPrice(ProductApi, insuranceDtos[i].ProductId, ref insuranceDtos[i]);
+    BusinessRules.SetInsuranceValues(ref insuranceDtos[i]);
+  }
+  orderToInsure.TotalInsuranceCost = insuranceDtos.Sum(x => x.InsuranceValue);
+
+  return orderToInsure;
+}
+```
+
+I added a new unit test for this functionality (`CalculateInsurance_GivenOrderThatContainsMultipleItems_ShouldBe1500EurosTotalInsuranceCost`).
