@@ -57,6 +57,31 @@ namespace Insurance.Tests
                 actual: result.InsuranceValue
             );
         }
+
+        [Fact]
+        public void CalculateInsurance_GivenOrderThatContainsMultipleItems_ShouldBe1500EurosTotalInsuranceCost()
+        {
+            const float expectedInsuranceValue = 1500;
+
+            var order = new HomeController.OrderDto
+            {
+                OrderId = 1,
+                ProductIds = new int[]
+                {
+                    837856,
+                    735246
+                }
+            };
+
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(order);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.TotalInsuranceCost
+            );
+        }
     }
 
     public class ControllerTestFixture: IDisposable
@@ -107,6 +132,13 @@ namespace Insurance.Tests
                                                        name = "Lenovo Chromebook C330-11 81HY000MMH",
                                                        productTypeId = 21,
                                                        salesPrice = 299
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 735246,
+                                                       name = "AEG L8FB86ES",
+                                                       productTypeId = 124,
+                                                       salesPrice = 699
                                                    }
                                                };
                             return context.Response.WriteAsync(JsonConvert.SerializeObject(products.FirstOrDefault(x => x.id == productId)));
@@ -128,6 +160,12 @@ namespace Insurance.Tests
                                                    {
                                                        id = 21,
                                                        name = "Laptops",
+                                                       canBeInsured = true
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 124,
+                                                       name = "Washing machines",
                                                        canBeInsured = true
                                                    }
                                                };
