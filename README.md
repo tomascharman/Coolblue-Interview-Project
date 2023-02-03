@@ -66,6 +66,8 @@ private const string GetSpecificProductUri = "/products/{0:G}";
 
 Expand the `HomeController` class with a new class (`OrderDto`). This will contain an order id, an array of product ids and a total insurance cost. I will then create a new Http post that will calculate the insurance costs for each product included in this order.
 
+#### IMPLEMENTATION ####
+
 ```
 public class OrderDto
 {
@@ -101,3 +103,28 @@ public OrderDto CalculateInsurance([FromBody] OrderDto orderToInsure)
 ```
 
 I added a new unit test for this functionality (`CalculateInsurance_GivenOrderThatContainsMultipleItems_ShouldBe1500EurosTotalInsuranceCost`).
+
+
+## TASK 4 [FEATURE 2] ##
+
+One thing to note is that I have renamed the `CalculateInsurance` method created in the previous task to `CalculateOrderInsurance` to avoid any confusion.
+
+#### PLAN ####
+Expand `BusinessRules` class to include a method (named `AddAdditionalInsuranceCostsToOrder`) that will check an array of type `InsuranceDto` for certain product types and apply additional costs to the `OrderDto` in which they belong. This task only requires €500 to be added to the total insurance cost if an order has one or more digital cameras, but method can be expanded for more of these types of costs. 
+Expand the `CalculateOrderInsurance` method to call `AddAdditionalInsuranceCostsToOrder`.
+
+#### IMPLEMENTATION ####
+
+```
+public static void AddAdditionalInsuranceCostsToOrder(ref OrderDto orderToInsure, InsuranceDto[] insuranceDtos)
+{
+  if (insuranceDtos.Any(x => x.ProductTypeName == DigitalCamerasProductType))
+    orderToInsure.TotalInsuranceCost += AdditionalInsuranceCostsForOrderContainingDigitalCamera;
+}
+```
+```
+BusinessRules.AddAdditionalInsuranceCostsToOrder(ref orderToInsure, insuranceDtos);
+```
+I added 2 new unit tests for this functionality
+* `CalculateOrderInsurance_GivenOrderThatContainsDigitalCamera_ShouldBe500EurosTotalInsuranceCost`
+* `CalculateOrderInsurance_GivenOrderThatContainsTwoDigitalCameras_ShouldBe500EurosTotalInsuranceCost`
