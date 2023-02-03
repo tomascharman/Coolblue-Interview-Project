@@ -11,26 +11,9 @@ namespace Insurance.Api.Controllers
         [Route("api/insurance/product")]
         public InsuranceDto CalculateInsurance([FromBody] InsuranceDto toInsure)
         {
-            int productId = toInsure.ProductId;
-
-            BusinessRules.GetProductType(ProductApi, productId, ref toInsure);
-            BusinessRules.GetSalesPrice(ProductApi, productId, ref toInsure);
-
-            float insurance = 0f;
-
-            if (toInsure.SalesPrice < 500 && toInsure.ProductTypeName != "Laptops")
-                toInsure.InsuranceValue = 0;
-            else
-            {
-                if (toInsure.SalesPrice > 500 && toInsure.SalesPrice < 2000)
-                    if (toInsure.ProductTypeHasInsurance)
-                        toInsure.InsuranceValue += 1000;
-                if (toInsure.SalesPrice >= 2000)
-                    if (toInsure.ProductTypeHasInsurance)
-                        toInsure.InsuranceValue += 2000;
-                if (toInsure.ProductTypeName == "Laptops" || toInsure.ProductTypeName == "Smartphones" && toInsure.ProductTypeHasInsurance)
-                    toInsure.InsuranceValue += 500;
-            }
+            BusinessRules.GetProductType(ProductApi, toInsure.ProductId, ref toInsure);
+            BusinessRules.GetSalesPrice(ProductApi, toInsure.ProductId, ref toInsure);
+            BusinessRules.SetInsuranceValues(ref toInsure);
 
             return toInsure;
         }
