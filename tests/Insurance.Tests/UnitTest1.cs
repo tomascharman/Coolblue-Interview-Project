@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Insurance.Api.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,25 @@ namespace Insurance.Tests
                       {
                           ProductId = 1,
                       };
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(dto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.InsuranceValue
+            );
+        }
+
+        [Fact]
+        public void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeIsLaptops_ShouldAdd500EurosToInsuranceCost()
+        {
+            const float expectedInsuranceValue = 500;
+
+            var dto = new HomeController.InsuranceDto
+            {
+                ProductId = 837856,
+            };
             var sut = new HomeController();
 
             var result = sut.CalculateInsurance(dto);
@@ -70,15 +90,26 @@ namespace Insurance.Tests
                         "products/{id:int}",
                         context =>
                         {
-                            int productId = int.Parse((string) context.Request.RouteValues["id"]);
-                            var product = new
-                                          {
-                                              id = productId,
-                                              name = "Test Product",
-                                              productTypeId = 1,
-                                              salesPrice = 750
-                                          };
-                            return context.Response.WriteAsync(JsonConvert.SerializeObject(product));
+                            int productId = int.Parse((string)context.Request.RouteValues["id"]);
+
+                            var products = new[]
+                                               {
+                                                   new
+                                                   {
+                                                       id = 1,
+                                                       name = "Test Product",
+                                                       productTypeId = 1,
+                                                       salesPrice = 750
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 837856,
+                                                       name = "Lenovo Chromebook C330-11 81HY000MMH",
+                                                       productTypeId = 21,
+                                                       salesPrice = 299
+                                                   }
+                                               };
+                            return context.Response.WriteAsync(JsonConvert.SerializeObject(products.FirstOrDefault(x => x.id == productId)));
                         }
                     );
                     ep.MapGet(
@@ -91,6 +122,12 @@ namespace Insurance.Tests
                                                    {
                                                        id = 1,
                                                        name = "Test type",
+                                                       canBeInsured = true
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 21,
+                                                       name = "Laptops",
                                                        canBeInsured = true
                                                    }
                                                };
