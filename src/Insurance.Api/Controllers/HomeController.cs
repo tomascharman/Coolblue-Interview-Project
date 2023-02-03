@@ -10,7 +10,7 @@ namespace Insurance.Api.Controllers
     {
         [HttpPost]
         [Route("api/insurance/order")]
-        public OrderDto CalculateInsurance([FromBody] OrderDto orderToInsure)
+        public OrderDto CalculateOrderInsurance([FromBody] OrderDto orderToInsure)
         {
             InsuranceDto[] insuranceDtos = new InsuranceDto[orderToInsure.ProductIds.Length];
 
@@ -29,6 +29,8 @@ namespace Insurance.Api.Controllers
             }
 
             orderToInsure.TotalInsuranceCost = insuranceDtos.Sum(x => x.InsuranceValue);
+
+            BusinessRules.AddAdditionalInsuranceCostsToOrder(ref orderToInsure, insuranceDtos);
 
             return orderToInsure;
         }

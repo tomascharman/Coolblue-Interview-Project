@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Insurance.Api.Controllers;
 using Newtonsoft.Json;
+using static Insurance.Api.Controllers.HomeController;
 
 namespace Insurance.Api
 {
@@ -54,14 +55,22 @@ namespace Insurance.Api
             }
         }
 
+        public static void AddAdditionalInsuranceCostsToOrder(ref OrderDto orderToInsure, InsuranceDto[] insuranceDtos)
+        {
+            if (insuranceDtos.Any(x => x.ProductTypeName == DigitalCamerasProductType))
+                orderToInsure.TotalInsuranceCost += AdditionalInsuranceCostsForOrderContainingDigitalCamera;
+        }
+
         private const string LaptopsProductType = "Laptops";
         private const string SmartphonesProductType = "Smartphones";
+        private const string DigitalCamerasProductType = "Digital cameras";
 
         private const int SalesPriceMinimumThreshold = 500;
         private const int SalesPriceMaximumThreshold = 2000;
         private const int InsuranceValueForLowEndProducts = 1000;
         private const int InsuranceValueForHighEndProducts = 2000;
         private const int InsuranceValueForLaptopProducts = 500;
+        private const int AdditionalInsuranceCostsForOrderContainingDigitalCamera = 500;
 
         private const string GetAllProductTypesUri = "/product_types";
         private const string GetSpecificProductUri = "/products/{0:G}";
