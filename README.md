@@ -128,3 +128,62 @@ BusinessRules.AddAdditionalInsuranceCostsToOrder(ref orderToInsure, insuranceDto
 I added 2 new unit tests for this functionality
 * `CalculateOrderInsurance_GivenOrderThatContainsDigitalCamera_ShouldBe500EurosTotalInsuranceCost`
 * `CalculateOrderInsurance_GivenOrderThatContainsTwoDigitalCameras_ShouldBe500EurosTotalInsuranceCost`
+
+## TASK 5 [FEATURE 3] ##
+
+#### PLAN ####
+
+Create a new `ProductTypeDto` to hold all relevant product type info including a surcharge value.
+Expand `BusinessRules` class to include a method (named `UpdateSurchargeForProductType`) that will update the surcharge value for a specified product type.
+Create new endpoint called `UpdateSurchargeForProductType`. I will lastly create a new method in `BusinessRules` (named `GetSurchageValue`) that will apply the surcharge (if any) to the total insurance value. This will be called inside both `CalculateInsurance` and `CalculateOrderInsurance`.
+
+#### IMPLEMENTATION ####
+
+```
+public class ProductTypeDto
+{
+  public int ProductTypeId { get; set; }
+  public string ProductTypeName { get; set; }
+  public bool CanBeInsured { get; set; }
+  public int Surcharge { get; set; }
+}
+```
+```
+public static void UpdateSurchargeForProductType(string baseAddress, int surchargeValue, ref HomeController.ProductTypeDto productType)
+{
+  HttpClient client = new HttpClient { BaseAddress = new Uri(baseAddress) };
+
+  string json = client.GetAsync(string.Format(GetSpecificProductTypeUri, productType.ProductTypeId)).Result.Content.ReadAsStringAsync().Result;
+  var product = JsonConvert.DeserializeObject<dynamic>(json);
+  product.surcharge = surchargeValue;
+
+  productType.Surcharge = surchargeValue;
+}
+```
+```
+[HttpPatch]
+[Route("api/insurance/addsurcharge")]
+public ProductTypeDto AddSurchargeToProductType([FromBody] ProductTypeDto productType, int surchargeValue)
+{
+  lock (LockObject)
+  {
+    BusinessRules.UpdateSurchargeForProductType(ProductApi, surchargeValue, ref productType);
+    return productType;
+  }
+}
+```
+```
+public static void GetSurchageValue(string baseAddress, int productID, ref HomeController.InsuranceDto insurance)
+{
+  HttpClient client = new HttpClient { BaseAddress = new Uri(baseAddress) };
+  string json = client.GetAsync(string.Format(GetSpecificProductUri, productID)).Result.Content.ReadAsStringAsync().Result;
+  var product = JsonConvert.DeserializeObject<dynamic>(json);
+
+  json = client.GetAsync(string.Format(GetSpecificProductTypeUri, product.productTypeId)).Result.Content.ReadAsStringAsync().Result;
+  var type = JsonConvert.DeserializeObject<dynamic>(json);
+
+  decimal surcharge = decimal.Parse((string)type.surcharge);
+
+insurance.InsuranceValue += surcharge;
+}
+```
