@@ -13,21 +13,16 @@ namespace Insurance.Api
     {
         public static void GetProductType(string baseAddress, int productID, ref HomeController.InsuranceDto insurance)
         {
-            HttpClient client = new HttpClient{ BaseAddress = new Uri(baseAddress)};
-            string json = client.GetAsync(GetAllProductTypesUri).Result.Content.ReadAsStringAsync().Result;
-            var collection = JsonConvert.DeserializeObject<dynamic>(json);
+            HttpClient client = new HttpClient { BaseAddress = new Uri(baseAddress) };
 
-            json = client.GetAsync(string.Format(GetSpecificProductUri, productID)).Result.Content.ReadAsStringAsync().Result;
+            string json = client.GetAsync(string.Format(GetSpecificProductUri, productID)).Result.Content.ReadAsStringAsync().Result;
             var product = JsonConvert.DeserializeObject<dynamic>(json);
 
-            for (int i = 0; i < collection.Count; i++)
-            {
-                if (collection[i].id == product.productTypeId && collection[i].canBeInsured == true)
-                {
-                    insurance.ProductTypeName = collection[i].name;
-                    insurance.ProductTypeHasInsurance = true;
-                }
-            }
+            json = client.GetAsync(string.Format(GetSpecificProductTypeUri, product.productTypeId)).Result.Content.ReadAsStringAsync().Result;
+            var type = JsonConvert.DeserializeObject<dynamic>(json);
+
+            insurance.ProductTypeName = type.name;
+            insurance.ProductTypeHasInsurance = type.canBeInsured;
         }
 
         public static void GetSalesPrice(string baseAddress, int productID, ref HomeController.InsuranceDto insurance)
@@ -61,6 +56,31 @@ namespace Insurance.Api
                 orderToInsure.TotalInsuranceCost += AdditionalInsuranceCostsForOrderContainingDigitalCamera;
         }
 
+        public static void UpdateSurchargeForProductType(string baseAddress, int surchargeValue, ref HomeController.ProductTypeDto productType)
+        {
+            HttpClient client = new HttpClient { BaseAddress = new Uri(baseAddress) };
+
+            string json = client.GetAsync(string.Format(GetSpecificProductTypeUri, productType.ProductTypeId)).Result.Content.ReadAsStringAsync().Result;
+            var product = JsonConvert.DeserializeObject<dynamic>(json);
+            product.surcharge = surchargeValue;
+
+            productType.Surcharge = surchargeValue;
+        }
+
+        public static void GetSurchageValue(string baseAddress, int productID, ref HomeController.InsuranceDto insurance)
+        {
+            HttpClient client = new HttpClient { BaseAddress = new Uri(baseAddress) };
+            string json = client.GetAsync(string.Format(GetSpecificProductUri, productID)).Result.Content.ReadAsStringAsync().Result;
+            var product = JsonConvert.DeserializeObject<dynamic>(json);
+
+            json = client.GetAsync(string.Format(GetSpecificProductTypeUri, product.productTypeId)).Result.Content.ReadAsStringAsync().Result;
+            var type = JsonConvert.DeserializeObject<dynamic>(json);
+
+            decimal surcharge = decimal.Parse((string)type.surcharge);
+
+            insurance.InsuranceValue += surcharge;
+        }
+
         private const string LaptopsProductType = "Laptops";
         private const string SmartphonesProductType = "Smartphones";
         private const string DigitalCamerasProductType = "Digital cameras";
@@ -74,5 +94,6 @@ namespace Insurance.Api
 
         private const string GetAllProductTypesUri = "/product_types";
         private const string GetSpecificProductUri = "/products/{0:G}";
+        private const string GetSpecificProductTypeUri = "/product_types/{0:G}";
     }
 }

@@ -133,6 +133,71 @@ namespace Insurance.Tests
             );
         }
 
+        [Fact]
+        public void AddSurchargeToProduct_AddSurchargeToLaptopProductTypes_Shouldbe500AddedSurchargeToLaptopProductTypes()
+        {
+            const decimal expectedSurchargeValue = 500;
+
+            var productType = new HomeController.ProductTypeDto
+            {
+                ProductTypeId = 1,
+            };
+            var sut = new HomeController();
+
+            var result = sut.AddSurchargeToProductType(productType, 500);
+
+            Assert.Equal(
+                expected: expectedSurchargeValue,
+                actual: result.Surcharge
+            );
+        }
+
+        [Fact]
+        public void CalculateInsurance_GivenSalesPriceUnder200EurosWithSurchargeOf999_ShouldAdd999ToInsuranceCost()
+        {
+            const decimal expectedInsuranceValue = 999;
+
+            var dto = new HomeController.InsuranceDto
+            {
+                ProductId = 832845,
+            };
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(dto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.InsuranceValue
+            );
+        }
+
+        [Fact]
+        public void CalculateOrderInsurance_GivenOrderThatContainsItemWithSurcharge_ShouldBe2499EurosTotalInsuranceCost()
+        {
+            const decimal expectedInsuranceValue = 2499;
+
+            var order = new HomeController.OrderDto
+            {
+                OrderId = 1,
+                ProductIds = new int[]
+                {
+                    837856,
+                    735246,
+                    832845
+
+                }
+            };
+
+            var sut = new HomeController();
+
+            var result = sut.CalculateOrderInsurance(order);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.TotalInsuranceCost
+            );
+        }
+
         public class ControllerTestFixture : IDisposable
         {
             private readonly IHost _host;
@@ -200,7 +265,7 @@ namespace Insurance.Tests
                                                    {
                                                        id = 832845,
                                                        name = "Apple iPod Touch (2019) 32 GB Space Gray",
-                                                       productTypeId = 33,
+                                                       productTypeId = 12,
                                                        salesPrice = 229
                                                    }
                                                    };
@@ -245,6 +310,53 @@ namespace Insurance.Tests
                                                    }
                                                    };
                                 return context.Response.WriteAsync(JsonConvert.SerializeObject(productTypes));
+                            }
+                        );
+                        ep.MapGet(
+                            "product_types/{id:int}",
+                            context =>
+                            {
+                                int productTypeId = int.Parse((string)context.Request.RouteValues["id"]);
+
+                                var productTypes = new[]
+                                                   {
+                                                   new
+                                                   {
+                                                       id = 1,
+                                                       name = "Test type",
+                                                       canBeInsured = true,
+                                                       surcharge = 0,
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 21,
+                                                       name = "Laptops",
+                                                       canBeInsured = true,
+                                                       surcharge = 0,
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 124,
+                                                       name = "Washing machines",
+                                                       canBeInsured = true,
+                                                       surcharge = 0,
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 33,
+                                                       name = "Digital cameras",
+                                                       canBeInsured = true,
+                                                       surcharge = 0,
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 12,
+                                                       name = "MP3 players",
+                                                       canBeInsured = false,
+                                                       surcharge = 999,
+                                                   }
+                                                   };
+                                return context.Response.WriteAsync(JsonConvert.SerializeObject(productTypes.FirstOrDefault(x => x.id == productTypeId)));
                             }
                         );
                     }

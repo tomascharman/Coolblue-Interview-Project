@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -26,6 +27,7 @@ namespace Insurance.Api.Controllers
                 BusinessRules.GetProductType(ProductApi, insuranceDtos[i].ProductId, ref insuranceDtos[i]);
                 BusinessRules.GetSalesPrice(ProductApi, insuranceDtos[i].ProductId, ref insuranceDtos[i]);
                 BusinessRules.SetInsuranceValues(ref insuranceDtos[i]);
+                BusinessRules.GetSurchageValue(ProductApi, insuranceDtos[i].ProductId, ref insuranceDtos[i]);
             }
 
             orderToInsure.TotalInsuranceCost = insuranceDtos.Sum(x => x.InsuranceValue);
@@ -42,8 +44,20 @@ namespace Insurance.Api.Controllers
             BusinessRules.GetProductType(ProductApi, toInsure.ProductId, ref toInsure);
             BusinessRules.GetSalesPrice(ProductApi, toInsure.ProductId, ref toInsure);
             BusinessRules.SetInsuranceValues(ref toInsure);
+            BusinessRules.GetSurchageValue(ProductApi, toInsure.ProductId, ref toInsure);
 
             return toInsure;
+        }
+
+        [HttpPatch]
+        [Route("api/insurance/addsurcharge")]
+        public ProductTypeDto AddSurchargeToProductType([FromBody] ProductTypeDto productType, int surchargeValue)
+        {
+            lock (LockObject)
+            {
+                BusinessRules.UpdateSurchargeForProductType(ProductApi, surchargeValue, ref productType);
+                return productType;
+            }
         }
 
         public class InsuranceDto
@@ -65,6 +79,15 @@ namespace Insurance.Api.Controllers
             public decimal TotalInsuranceCost { get; set; }
         }
 
+        public class ProductTypeDto
+        {
+            public int ProductTypeId { get; set; }
+            public string ProductTypeName { get; set; }
+            public bool CanBeInsured { get; set; }
+            public int Surcharge { get; set; }
+        }
+
         private const string ProductApi = "http://localhost:5002";
+        public static readonly object LockObject = new object();
     }
 }
